@@ -25,6 +25,8 @@ class User(AbstractUser):
     garage           = models.CharField(max_length=100, blank=True)
     bank_name        = models.CharField(max_length=100, blank=True)
     bank_account     = models.CharField(max_length=10, blank=True)  # NUBAN
+    license_file   = models.FileField(upload_to='licenses/', blank=True, null=True)
+    vehicle_file   = models.FileField(upload_to='vehicles/', blank=True, null=True)
 
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['username']
