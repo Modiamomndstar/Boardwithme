@@ -1,44 +1,66 @@
-// frontend/src/pages/TripList.tsx
 import { useEffect, useState } from 'react';
+import { Car } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import api from '../lib/api';
-import Button from '../components/Button';
-
-interface Trip {
-  id: number;
-  origin: string;
-  destination: string;
-  date: string;
-  passenger_price: number;
-  available_seats: number;
-}
 
 export default function TripList() {
-  const [trips, setTrips] = useState<Trip[]>([]);
+  const [trips, setTrips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [user, setUser] = useState<any>({});
+  const navigate = useNavigate();
 
   useEffect(() => {
-    api.get('/trips/').then(res => setTrips(res.data));
+    const fetchData = async () => {
+      try {
+        const userRes = await api.get('/auth/me/');
+        setUser(userRes.data);
+        const tripsRes = await api.get('/trips/');
+        setTrips(tripsRes.data);
+        setLoading(false);
+      } catch (err: any) {
+        toast.error('Failed to load data');
+        setError('Could not load trips');
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  const book = (tripId: number, seats: number) => {
-    api.post('/bookings/', { trip: tripId, seats_booked: seats })
-      .then(() => alert('Booked!'))
-      .catch(err => alert(err.response.data));
-  };
+  if (loading) return <p className="p-6 text-center text-gray-500">Loading...</p>;
+  if (error) return <p className="p-6 text-center text-red-500">{error}</p>;
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Available Trips</h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {trips.map(t => (
-          <div key={t.id} className="bg-white rounded-xl shadow p-4">
-            <h2 className="font-bold">{t.origin} → {t.destination}</h2>
-            <p>Date: {t.date}</p>
-            <p>Price: ₦{t.passenger_price}</p>
-            <p>Seats left: {t.available_seats}</p>
-            <Button onClick={() => book(t.id, 1)}>Book 1 seat</Button>
-          </div>
-        ))}
-      </div>
+    <div>
+      <h1 className="text-3xl font-bold mb-6">Available Trips</h1>
+      {!trips.length ? (
+        <p className="text-center text-gray-500">No trips found.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {trips.map(trip => (
+            <div key={trip.id} className="bg-white rounded-xl shadow hover:shadow-2xl transition p-6 flex flex-col">
+              <div className="flex items-center gap-2 mb-3">
+                <Car className="h-5 w-5 text-green-600" />
+                <h2 className="text-lg font-semibold text-neutral truncate">
+                  {trip.origin} → {trip.destination}
+                </h2>
+              </div>
+              <p className="text-sm text-gray-600"><strong>Date:</strong> {trip.date}</p>
+              <p className="text-sm text-gray-600"><strong>Pickup:</strong> {trip.pickup_point}</p>
+              <p className="text-sm text-gray-600"><strong>Seats:</strong> {trip.available_seats}/{trip.total_seats}</p>
+              <p className="text-lg font-bold text-green-700 mt-2">₦{trip.passenger_price}</p>
+              <button
+                onClick={() => navigate(`/book/${trip.id}`)}
+                disabled={trip.available_seats === 0}
+                className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg disabled:opacity-50"
+              >
+                Book Seat
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

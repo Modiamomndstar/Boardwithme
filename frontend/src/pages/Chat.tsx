@@ -1,5 +1,5 @@
 // Chat.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
 interface Message {
@@ -13,6 +13,7 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [ws, setWs] = useState<WebSocket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('access');
@@ -22,6 +23,10 @@ export default function Chat() {
     return () => socket.close();
   }, [tripId]);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   const send = () => {
     if (ws && input.trim()) {
       ws.send(JSON.stringify({ message: input }));
@@ -30,17 +35,19 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+    <div className="flex flex-col h-[80vh] bg-gray-100 rounded-xl shadow p-4">
+      <div className="flex-1 overflow-y-auto space-y-2 mb-2">
         {messages.map((m, i) => (
-          <div key={i} className={`${m.sender === 'you' ? 'text-right' : 'text-left'}`}>
-            <span className={`inline-block px-3 py-1 rounded ${m.sender === 'you' ? 'bg-green-500 text-white' : 'bg-gray-300'}`}>
+          <div key={i} className={`flex ${m.sender === 'you' ? 'justify-end' : 'justify-start'}`}>
+            <span className={`inline-block px-4 py-2 rounded-2xl max-w-xs break-words
+              ${m.sender === 'you' ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-800'}`}>
               {m.message}
             </span>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
-      <div className="p-4 bg-white flex gap-2">
+      <div className="flex gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
