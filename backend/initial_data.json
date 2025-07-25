@@ -1,0 +1,21 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "password": "pbkdf2_sha256$600000$xKt4ZOIdmCPjaZ4Yi43fgV$wJ0ukh/C72aq8HfwEo7juSNMEx++5Cp8AImcgUjTaig=",
+      "is_superuser": true,
+      "is_staff": true
+    }
+  },
+  {
+    "model": "yourapp.passenger",
+    "pk": 2,
+    "fields": {
+      "phone_number": "+2348012345678",
+      "password": "pbkdf2_sha256$600000$xKt4ZOIdmCPjaZ4Yi43fgV$wJ0ukh/C72aq8HfwEo7juSNMEx++5Cp8AImcgUjTaig=",
+      "full_name": "Test Passenger"
+    }
+  }
+]
